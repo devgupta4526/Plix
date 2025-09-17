@@ -1,4 +1,5 @@
 "use client";
+
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useSelector } from "react-redux";
 import AutomationReducer from "./slices/automation";
