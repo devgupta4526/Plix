@@ -20,7 +20,7 @@ type Props = {
 async function Layout({ children, params }: Props) {
 
   return (
-   <div>
+    <div>
       <div className="p-3">
         <Sidebar slug={params.slug} />
         <div className="lg:ml-[250px] lg:pl-10 lg:py-5 flex flex-col overflow-auto">
