@@ -23,6 +23,7 @@ model User {
   subscription Subscription?
   integrations Integrations[]
   automations  Automation[]
+  profile      Profile?
 }
 
 model Subscription {
@@ -58,6 +59,7 @@ model Automation {
   User      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String?   @db.Uuid
   keywords  Keyword[]
+  product   Product?
 }
 
 model Dms {
@@ -125,4 +127,98 @@ enum MEDIATYPE {
 enum LISTENERS {
   SMARTAI
   MESSAGE
+}
+
+model Profile {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String    @unique @db.Uuid
+
+  username    String    @unique
+  displayName String?
+  bio         String?
+  avatarUrl   String?
+  themeId     String    @default("minimal-light")
+  themeConfig Json?
+
+  published   Boolean   @default(false)
+  views       Int       @default(0)
+
+  links       Link[]
+  blocks      Block[]
+  products    Product[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Link {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  Profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId String   @db.Uuid
+
+  label     String
+  url       String
+  icon      String?
+  position  Int      @default(0)
+  active    Boolean  @default(true)
+  clicks    Int      @default(0)
+
+  createdAt DateTime @default(now())
+}
+
+model Block {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  Profile   Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId String    @db.Uuid
+
+  type      BLOCKTYPE @default(TEXT)
+  position  Int       @default(0)
+  data      Json
+
+  createdAt DateTime  @default(now())
+}
+
+model Template {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug       String   @unique
+  name       String
+  previewUrl String?
+  config     Json
+  isPremium  Boolean  @default(false)
+  isPublic   Boolean  @default(true)
+  createdBy  String?  @db.Uuid
+  usageCount Int      @default(0)
+
+  createdAt  DateTime @default(now())
+}
+
+model Product {
+  id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  Profile      Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId    String      @db.Uuid
+
+  name         String
+  description  String?
+  imageUrl     String?
+  price        String?
+  promoUrl     String
+  ctaLabel     String      @default("Get it")
+
+  autoDmEnabled Boolean    @default(false)
+  Automation    Automation? @relation(fields: [automationId], references: [id], onDelete: SetNull)
+  automationId  String?    @unique @db.Uuid
+
+  position     Int         @default(0)
+  active       Boolean     @default(true)
+  clicks       Int         @default(0)
+
+  createdAt    DateTime    @default(now())
+}
+
+enum BLOCKTYPE {
+  TEXT
+  IMAGE
+  EMBED
+  PRODUCT
 }
