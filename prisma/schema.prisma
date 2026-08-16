@@ -14,16 +14,18 @@ datasource db {
 }
 
 model User {
-  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  clerkId      String         @unique
-  email        String         @unique
-  firstname    String?
-  lastname     String?
-  createdAt    DateTime       @default(now())
-  subscription Subscription?
-  integrations Integrations[]
-  automations  Automation[]
-  profile      Profile?
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clerkId           String              @unique
+  email             String              @unique
+  firstname         String?
+  lastname          String?
+  createdAt         DateTime            @default(now())
+  isAdmin           Boolean             @default(false)
+  subscription      Subscription?
+  integrations      Integrations[]
+  automations       Automation[]
+  profile           Profile?
+  influencerProfile InfluencerProfile?
 }
 
 model Subscription {
@@ -221,4 +223,129 @@ enum BLOCKTYPE {
   IMAGE
   EMBED
   PRODUCT
+}
+
+// ─── Marketplace ────────────────────────────────────────────────────────────
+
+model BrandRequest {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyName    String
+  contactName    String
+  contactEmail   String
+  contactPhone   String?
+  industry       String?
+  budgetRange    String?
+  campaignGoals  String?
+  targetAudience String?
+  deliverables   String[]
+  nicheNeeded    String[]
+  timeline       String?
+  status         REQUESTSTATUS @default(NEW)
+  internalNotes  String?
+  createdAt      DateTime      @default(now())
+
+  campaigns Campaign[]
+}
+
+enum REQUESTSTATUS {
+  NEW
+  REVIEWING
+  MATCHED
+  IN_PROGRESS
+  COMPLETED
+  CLOSED
+}
+
+model InfluencerProfile {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  User              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            String            @unique @db.Uuid
+
+  niche             String[]
+  platforms         Json
+  avgEngagementRate Float?
+  audienceSummary   String?
+  rateCard          Json?
+  bio               String?
+  status            INFLUENCERSTATUS  @default(PENDING_REVIEW)
+
+  createdAt         DateTime          @default(now())
+
+  campaignMatches   CampaignInfluencer[]
+}
+
+enum INFLUENCERSTATUS {
+  PENDING_REVIEW
+  APPROVED
+  ACTIVE
+}
+
+model Campaign {
+  id             String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  BrandRequest   BrandRequest   @relation(fields: [brandRequestId], references: [id])
+  brandRequestId String         @db.Uuid
+
+  title          String
+  briefSummary   String?
+  status         CAMPAIGNSTATUS @default(OPEN)
+  matches        CampaignInfluencer[]
+
+  createdAt      DateTime       @default(now())
+}
+
+enum CAMPAIGNSTATUS {
+  OPEN
+  MATCHING
+  ACTIVE
+  COMPLETED
+}
+
+model CampaignInfluencer {
+  id                  String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  Campaign            Campaign          @relation(fields: [campaignId], references: [id])
+  campaignId          String            @db.Uuid
+  InfluencerProfile   InfluencerProfile @relation(fields: [influencerProfileId], references: [id])
+  influencerProfileId String            @db.Uuid
+
+  status              MATCHSTATUS       @default(PROPOSED)
+  agreedRate          String?
+  deliverables        String?
+
+  createdAt           DateTime          @default(now())
+}
+
+enum MATCHSTATUS {
+  PROPOSED
+  ACCEPTED
+  DECLINED
+  DELIVERED
+  PAID
+}
+
+// ─── Portfolio / Gallery ────────────────────────────────────────────────────
+
+model PortfolioItem {
+  id           String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title        String
+  clientName   String
+  category     PORTFOLIO_CATEGORY
+  mediaUrl     String
+  thumbnailUrl String?
+  description  String?
+  externalLink String?
+  metrics      Json?
+  featured     Boolean            @default(false)
+  position     Int                @default(0)
+  fullWriteup  String?
+  resultsSummary String?
+
+  createdAt    DateTime           @default(now())
+}
+
+enum PORTFOLIO_CATEGORY {
+  AD
+  SOCIAL_POST
+  CAMPAIGN
+  REEL
+  BRAND_PROFILE
 }

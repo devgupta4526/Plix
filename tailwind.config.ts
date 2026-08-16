@@ -18,7 +18,18 @@ const config = {
 			},
 		},
 		extend: {
+			fontFamily: {
+				serif: ["var(--font-fraunces)", "Georgia", "serif"],
+				sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+			},
 			colors: {
+				// ── Ink & Ember palette ──────────────────────────
+				ember: "#0E0E10",         // near-black charcoal base
+				ivory: "#F5F1E8",         // warm cream / primary text
+				"terracotta": "#C4622D",  // primary accent
+				"flame": "#FF6B35",       // hot CTA accent
+				"sage": "#8A9A5B",        // secondary / tags
+				// ── existing custom tokens ────────────────────────
 				"in-active": "#545454",
 				connector: "#F0F1F6",
 				"keyword-yellow": "#E1CE26",
